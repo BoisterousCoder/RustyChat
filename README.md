@@ -37,7 +37,6 @@ Clone this repository
 
 ## Next steps
 - Currently Messages are sent to a server to be sent to out to everyone. I plan on changing this to be peer to peer with the server just acting as an address swapping place. Maybe even a system to select the server you want to meet on.
-- Currently encryption of data is handled by the cpu. One data I want to be able to encrypt video and voice data. Inorder to accomidate this I want to move the encryption to the gpu.
 - Add passwords to groups?
 - Fix the randomness of the constants generated at the beggining
 - Generate a new shared key every so often for increased security
