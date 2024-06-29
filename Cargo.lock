@@ -2617,7 +2617,6 @@ dependencies = [
  "glib-macros",
  "gtk4",
  "hkdf",
- "js-sys",
  "k256",
  "lazy_static",
  "libadwaita",
@@ -2628,8 +2627,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.7",
- "wasm-bindgen",
- "web-sys",
  "x25519-dalek",
 ]
 

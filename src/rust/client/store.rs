@@ -5,10 +5,7 @@ use k256::ecdsa::{Signature, SigningKey, signature::Signer};
 use x25519_dalek::PublicKey;
 use serde::{Serialize, Deserialize};
 
-#[cfg(not(target_arch = "wasm32"))]
 use crate::client_gtk::save::GroupSave;
-#[cfg(target_arch = "wasm32")]
-use crate::client_web::save::GroupSave;
 
 use super::utils::{Address, log, split_and_clean};
 use super::ratchet::Ratchet;
@@ -83,7 +80,7 @@ impl Crypto{
 	}
 	//TODO:Make this address and not name
 	pub fn trust(&mut self, name:String) -> Option<&Address>{
-		for mut agent in &mut self.agents {
+		for agent in &mut self.agents {
 			if agent.keys.address.name.eq(&name){
 				match &self.self_data.secret {
 					SecretKey::Ephemeral(secret) => {

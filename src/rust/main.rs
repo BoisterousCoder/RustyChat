@@ -1,5 +1,3 @@
-#![cfg(not(target_arch = "wasm32"))]
-
 use crate::client_gtk::build_ui::build_sign_in;
 use ::gtk::{glib::ExitCode, prelude::*, Button, CheckButton, Entry};
 use adw::{ActionRow, Application};
