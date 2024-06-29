@@ -5,7 +5,7 @@ use k256::ecdsa::{Signature, SigningKey, signature::Signer};
 use x25519_dalek::PublicKey;
 use serde::{Serialize, Deserialize};
 
-use crate::client_gtk::save::GroupSave;
+use crate::client::save::GroupSave;
 
 use super::utils::{Address, log, split_and_clean};
 use super::ratchet::Ratchet;

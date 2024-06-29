@@ -6,12 +6,17 @@ use magic_crypt::MagicCryptTrait;
 use magic_crypt::new_magic_crypt;
 use rand_core::{RngCore, OsRng};
 
-use crate::{SignInDetails, STATE, client::{store::Crypto, utils::calc_hash}};
-
-use super::build_ui::build_content;
+use crate::{STATE, client::{store::Crypto, utils::calc_hash}};
+use super::{build_ui::build_content, utils::log};
 
 const SAVE_DIR:&str = "./saves";
 const FILE_EXTENTION:&str = "user";
+
+struct SignInDetails {
+    pub private_device_id:[u8; 32],
+    pub username:String,
+    pub password:String
+}
 
 pub fn on_sign_in(sign_in_button:&Button){
     if let Some(options) = on_sign_in_attempt(&sign_in_button){
@@ -52,6 +57,7 @@ fn on_sign_in_attempt(sign_in_button:&Button) -> Option<SignInDetails>{
     #[allow(deprecated)]
     let filename = format!("{}/{}.{}", SAVE_DIR, base64::encode(&username), FILE_EXTENTION);
     if !fs::metadata(&filename).is_ok() {
+        log("User file is missing. Making a new user and file");
         let mut device_id = [0u8; 32];
         OsRng.fill_bytes(&mut device_id);
         #[allow(deprecated)]
@@ -70,10 +76,11 @@ fn on_sign_in_attempt(sign_in_button:&Button) -> Option<SignInDetails>{
             password 
         });
     }else{
+        log("User file found!");
         let mut file = File::open(filename).expect("Unable to open user file");
         let mut data = String::new();
         if file.read_to_string(&mut data).is_ok(){
-            let key = new_magic_crypt!(&password, 256);
+            let key = new_magic_crypt!(calc_hash(&password), 256);
             if let Some(device_id_str) = key.decrypt_base64_to_string(&data).ok(){
                 #[allow(deprecated)]
                 let device_id_vec = base64::decode(device_id_str).unwrap();
