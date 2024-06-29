@@ -1,12 +1,7 @@
-#![cfg(not(target_arch = "wasm32"))]
-
-use crate::client_gtk::build_ui::build_sign_in;
 use ::gtk::{glib::ExitCode, prelude::*, Button, CheckButton, Entry};
-use adw::{ActionRow, Application};
+use adw::{ActionRow, Application, gio::ApplicationFlags};
 use ::gtk::{Box, ListBox, Orientation, Popover};
 use rand_core::{OsRng, RngCore};
-use crate::client_gtk::save::GroupSave;
-use client::utils::Address;
 use std::sync::{Mutex, Arc};
 use rust_socketio::client::Client;
 use rust_socketio::{ClientBuilder, Payload};
@@ -16,16 +11,17 @@ use crossbeam_queue::SegQueue;
 extern crate lazy_static;
 
 mod client;
-mod client_gtk;
 
+use crate::client::build_ui::build_sign_in;
+use crate::client::save::GroupSave;
 use crate::client::store::Crypto;
 use crate::client::serverhandlers::{ServerMsg, MsgContent};
-use crate::client::utils::log;
+use crate::client::utils::{log, Address};
 
 static APP_ID: &str = "com.BoisterousCoder.YakkingYak";
 static APP_TITLE: &str = "Yakking Yak";
 
-const SLEEP_DURATION:u64 = 1500;//In mils
+const TIMEOUT_SLEEP_DURATION:u64 = 1500;//In mils
 const SEED:u64 = 1234567890; //TODO: fix the seed to its actually random
 const PASSWORD:&str = "ABCDE";
 const PROXY_SEED:u64 = 0987654321; //TODO: fix the seed to its actually random
@@ -33,12 +29,6 @@ const DEVICE_ID:[u8; 32] = [1u8; 32];//TODO: Make this useful
 const MSG_TYPES:[char; 6] = ['i', 's', 't', 'l', 'p', 'j'];
 const SOCKET_SERVER_ADDRESS:&'static str = "http://localhost:4000";
 const IS_AUTO_SAVING:bool = true;
-
-struct SignInDetails {
-    pub private_device_id:[u8; 32],
-    pub username:String,
-    pub password:String
-}
 
 lazy_static! {
     static ref GROUP:Mutex<String> = {
@@ -72,8 +62,12 @@ fn main() -> ExitCode {
     //The first emit doesn't seem to run right. This is a bypass for this.
     SOCKET_CLIENT.emit("TEST", "WARMUP").unwrap();
 
+    let mut flags = ApplicationFlags::default();
+    flags.set(ApplicationFlags::NON_UNIQUE, true);
+
     let app = Application::builder()
         .application_id(APP_ID)
+        .flags(flags)
         .build();
     
     app.connect_activate(build_sign_in);

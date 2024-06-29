@@ -4,10 +4,6 @@ use base64;
 use k256::ecdsa::{Signature, VerifyingKey, signature::Verifier};
 use serde::{Deserialize, Serialize};
 
-
-#[cfg(target_arch = "wasm32")]
-use web_sys::console;
-
 pub fn decode_base64(text:&str) -> String{
 	log(&format!("Decoding base64 ({})", text));
 	#[allow(deprecated)]
@@ -55,9 +51,6 @@ pub fn split_and_clean(text:&str, split:char) -> Vec<&str>{
 		.collect()
 }
 pub fn log(text:&str){
-	#[cfg(target_arch = "wasm32")]
-	console::log_1(&text.to_string().into());
-	#[cfg(not(target_arch = "wasm32"))]
 	println!("Logged: {}", text);
 }
 

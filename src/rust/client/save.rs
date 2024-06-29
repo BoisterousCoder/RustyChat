@@ -1,4 +1,3 @@
-#![cfg(not(target_arch = "wasm32"))]
 use serde::{Serialize, Deserialize};
 
 use crate::client::forein_agent::ForeinAgent;

@@ -166,12 +166,6 @@ impl ServerMsg{
 			MsgContent::Join(_) => Some(("went online".to_string(), JOIN_LABEL)),
 			MsgContent::Leave(_) => Some(("went offline".to_string(), LEAVE_LABEL)),
 			MsgContent::Trust(addr) => {
-				#[cfg(target_arch = "wasm32")]
-				let res = {
-					let relation = state.relation(&addr);
-					Some((format!("is trusting <span class=\"{}\">{}</span>", relation, addr.name), TRUST_LABEL))
-				};
-				#[cfg(not(target_arch = "wasm32"))]
 				let res = Some((format!("{} is trusting {}", self.from.name, addr.name), TRUST_LABEL));
 				res
 			},
@@ -179,16 +173,6 @@ impl ServerMsg{
 		};
 		let native_time = NaiveDateTime::from_timestamp_millis(self.time_stamp).expect("Invalid Timestap for message!");
 		let date_time = native_time.format("%Y-%m-%d %H:%M:%S");
-
-		#[cfg(target_arch = "wasm32")]
-		return match msg_data {
-			Some((content, label)) => {
-				let relation = state.relation(&self.from);
-				Some(format!("<span class=\"{}\">({}) {}</span> {}", relation, label, self.from.name, content.replace("\r", "")))
-			},
-			None => None
-		};
-		#[cfg(not(target_arch = "wasm32"))]
 		return match msg_data {
 			Some((content, label)) => {
 				let relation = state.relation(&self.from);
