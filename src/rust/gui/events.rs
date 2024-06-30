@@ -1,5 +1,6 @@
 use crate::client::state::Crypto;
-use crate::{GROUP, SOCKET_CLIENT, STATE};
+use crate::messaging::socket::send_text;
+use crate::{GROUP, STATE};
 
 use crate::client::save::GroupSave;
 use crate::client::utils::{log, Address};
@@ -21,7 +22,7 @@ pub fn on_user_click(from:&Address){
         };
         if content.is_some() {
             let msg = ServerMsg::new(&state.get_address(), content.unwrap());
-            SOCKET_CLIENT.emit("t",msg.to_string(&state)).expect("failed to send join message");
+            send_text("t",&msg.to_string(&state));
         }
     }else{
         log(&format!("Can't trust {} because you already trust them, you dont have their primary key, or it's you. Can't trust yourself after all.", from.name))
@@ -50,7 +51,7 @@ pub fn on_join_group(group_entry:&Entry){
 
     let content = MsgContent::Join(group.to_string());
     let msg =  ServerMsg::new(&state.get_address(), content);
-    SOCKET_CLIENT.emit("j", msg.to_string(&state)).expect("failed to send join message");
+    send_text("j",&msg.to_string(&state));
     state.update_online_statuses();
 }
 pub fn on_send_msg(msg_entry:&Entry){
@@ -71,7 +72,7 @@ pub fn on_send_msg(msg_entry:&Entry){
     };
     let msg = ServerMsg::new(&state.get_address(), content);
 
-    SOCKET_CLIENT.emit(label, msg.to_string(&state)).expect("failed to send join message");
+    send_text(&label,&msg.to_string(&state));
     msg_entry.buffer().set_text("");
 }
 

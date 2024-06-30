@@ -2,7 +2,8 @@ use ::gtk::{prelude::*, Button};
 use ::gtk::{Box, ListBox, Orientation, Popover};
 
 use crate::constants::{IS_AUTO_SAVING, MSG_CHECK_INTERVAL, POLL_INTERVAL};
-use crate::{GROUP, MSG_QUEUE, SOCKET_CLIENT, STATE};
+use crate::messaging::socket::{send_text, MSG_QUEUE};
+use crate::{GROUP, STATE};
 use crate::gui::build::display_msg;
 use crate::client::serverhandlers::{MsgContent, ServerMsg};
 use crate::client::state::Crypto;
@@ -34,7 +35,7 @@ pub fn do_ui_loop(iterations_since_last_poll:&u64, msg_list:&ListBox, user_list:
 fn send_public_key(state: &Crypto){
     let content_to_send = MsgContent::PublicKey(state.public_key());
     let msg_to_send = ServerMsg::new(&state.get_address(), content_to_send);
-    SOCKET_CLIENT.emit("p", msg_to_send.to_string(&state)).expect("unable to send primary keys");
+    send_text("p", &msg_to_send.to_string(&state));
 }
 
 pub fn update_msg_display(msg_list:&ListBox, user_list:&Popover, state:&Crypto){
