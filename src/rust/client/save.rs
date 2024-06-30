@@ -56,8 +56,15 @@ impl GroupSave {
                 if file.read_to_string(&mut data).is_ok(){
                     let key = new_magic_crypt!(hashed_password, 256);
                     if let Some(plain_data) = key.decrypt_base64_to_string(&data).ok(){
-                        return serde_json::from_str(&plain_data).ok();
-                    };
+                        let is_group:Option<Self> = serde_json::from_str(&plain_data).ok();
+                        if let Some(group) = is_group {
+                            let mut mut_group = group.clone();
+                            for agent in &mut mut_group.agents{
+                                agent.is_online = false;
+                            }
+                            return Some(mut_group);
+                        }
+                    }
                 }
             };
         }

@@ -5,8 +5,7 @@ use k256::ecdsa::{Signature, SigningKey, signature::Signer};
 use x25519_dalek::PublicKey;
 use serde::{Serialize, Deserialize};
 
-use crate::client::save::GroupSave;
-
+use super::save::GroupSave;
 use super::utils::{Address, log, split_and_clean};
 use super::ratchet::Ratchet;
 use super::forein_agent::ForeinAgent;
@@ -74,7 +73,9 @@ impl Crypto{
 				address:addr, 
 				secret: SecretKey::Empty(),
 				public_key
-			}
+			},
+			failed_checks: 0u8,
+			recently_sent_poll:false
 		});
 		return true;
 	}
@@ -128,15 +129,16 @@ impl Crypto{
 		}
 		return None;
 	}	
-	pub fn agent_from_pub_key(&self, key:&str) -> Option<&ForeinAgent>{
-		for agent in &self.agents {
-			#[allow(deprecated)]
-			if base64::encode(agent.keys.public_key.as_bytes()) == key.to_string(){
-				return Some(agent);
-			}
-		}
-		return None;
-	}
+	//This is to make logging easier. Not currently in use
+	// pub fn agent_from_pub_key(&self, key:&str) -> Option<&ForeinAgent>{
+	// 	for agent in &self.agents {
+	// 		#[allow(deprecated)]
+	// 		if base64::encode(agent.keys.public_key.as_bytes()) == key.to_string(){
+	// 			return Some(agent);
+	// 		}
+	// 	}
+	// 	return None;
+	// }
 	pub fn relation(&self, forien:&Address) -> String {
 		return match self.keys(forien) {
 			Some(key_bundle) => {
@@ -251,10 +253,26 @@ impl Crypto{
 		self.agents = save.agents;
 		self.proxy_ratchet = save.proxy_ratchet;
 	}
-	pub fn set_is_online(&mut self, addr:&Address, is_online:bool){
+	pub fn set_recieved_poll(&mut self, addr:&Address){
 		for agent in self.agents.iter_mut(){
 			if &agent.keys.address == addr {
-				agent.is_online = is_online;
+				agent.recently_sent_poll = true;
+			}
+		}
+	}
+	pub fn set_offline(&mut self, addr:&Address){
+		for agent in self.agents.iter_mut(){
+			if &agent.keys.address == addr {
+				agent.is_online = false;
+			}
+		}
+	}
+	pub fn update_online_statuses(&mut self){
+		for agent in &mut self.agents{
+			agent.update_online_status();
+			//It is assumed that you are infact online
+			if agent.keys.address == self.self_data.address {
+				agent.is_online=true;
 			}
 		}
 	}

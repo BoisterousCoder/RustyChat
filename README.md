@@ -40,6 +40,7 @@ Clone this repository
 - Add passwords to groups?
 - Fix the randomness of the constants generated at the beggining
 - Generate a new shared key every so often for increased security
+- Start signing messages before sending for verification purposes
 
 ## Troubleshooting
 - You may need to create a bin folder in the public folder for the program to build into

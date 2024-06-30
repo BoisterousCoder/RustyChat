@@ -1,14 +1,16 @@
 use ::gtk::{prelude::*, Button, CheckButton, Entry, Text, Box, 
         ListBox, Orientation, SelectionMode, ScrolledWindow, MenuButton, Popover};
-use adw::{ApplicationWindow, HeaderBar};
+use adw::{ActionRow, ApplicationWindow, HeaderBar};
 use glib::{self, timeout_add_local};
 use std::time::Duration;
 
-use crate::{on_join_group, on_send_msg, SOCKET_CLIENT, update_msg_display, 
-    TIMEOUT_SLEEP_DURATION, APP_TITLE, MSG_QUEUE, STATE};
-use crate::client::{serverhandlers::{ServerMsg, MsgContent}, utils::log};
+use crate::{APP_TITLE, MSG_CHECK_INTERVAL};
+use crate::client::serverhandlers::ServerMsg;
+// use crate::client::utils::log;
+use crate::Crypto;
 
-use super::sign_in::on_sign_in;
+use crate::gui::events::{on_join_group, on_send_msg, on_sign_in};
+use crate::gui::main_loop::do_ui_loop;
 
 pub fn build_sign_in(app: &adw::Application) {
     let content = Box::new(Orientation::Vertical, 0);
@@ -199,22 +201,33 @@ pub fn build_content(content: &Box){
     app_content.append(&bottom_row);
     
     content.append(&app_content);
-    
-    timeout_add_local( Duration::from_millis(TIMEOUT_SLEEP_DURATION), move || {
-        while let Some(txt) = MSG_QUEUE.pop() {
-            log("handing msg");
-            let state = &mut STATE.lock().expect("unable to aquire state");
-
-            if let Some(msg) = ServerMsg::from_server(&txt, state){
-                update_msg_display(&msg_list, &user_list, state);
-
-                if let MsgContent::Join(_) = msg.content {
-                    let content_to_send = MsgContent::PublicKey(state.public_key());
-                    let msg_to_send = ServerMsg::new(&state.get_address(), content_to_send);
-                    SOCKET_CLIENT.emit("p", msg_to_send.to_string(&state)).expect("unable to send primary keys");
-                }
-            }
-        };
-        return glib::source::Continue(true);
+    let mut iterations_since_last_poll:u64 = 0;
+    timeout_add_local( Duration::from_millis(MSG_CHECK_INTERVAL), move || {
+        let is_reseting_iter = do_ui_loop(&iterations_since_last_poll,&msg_list, &user_list);
+        if is_reseting_iter {
+            iterations_since_last_poll = 0;
+        }else{
+            iterations_since_last_poll += 1
+        }
+        glib::source::Continue(true)
     });
+}
+
+pub fn display_msg(msg_list:&ListBox, msg:ServerMsg, state:&Crypto){
+    if let Some(msg_display) = msg.display(state){
+        let mut msg_parts = msg_display.split("\r").into_iter();
+        let name_plate = msg_parts.next().unwrap();
+        let content = msg_parts.next().unwrap();
+        let relation = msg_parts.next().unwrap();
+
+        let row = ActionRow::builder()
+            .title(content)
+            .subtitle(name_plate)
+            .css_classes(vec![relation.to_string()])
+            .activatable(true)
+            .build();
+        msg_list.append(&row);
+    }else{
+        // log("Message recieved but there's nothing to display")
+    }
 }

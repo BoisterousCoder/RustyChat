@@ -1,55 +1,22 @@
 
 use std::{path::Path, fs::{self, File}, io::{Write, Read}};
 
-use gtk::{prelude::*, Button, Entry, Box};
 use magic_crypt::MagicCryptTrait;
 use magic_crypt::new_magic_crypt;
 use rand_core::{RngCore, OsRng};
 
-use crate::{STATE, client::{store::Crypto, utils::calc_hash}};
-use super::{build_ui::build_content, utils::log};
+use crate::client::utils::{calc_hash, log};
 
 const SAVE_DIR:&str = "./saves";
 const FILE_EXTENTION:&str = "user";
 
-struct SignInDetails {
+pub struct SignInDetails {
     pub private_device_id:[u8; 32],
     pub username:String,
     pub password:String
 }
 
-pub fn on_sign_in(sign_in_button:&Button){
-    if let Some(options) = on_sign_in_attempt(&sign_in_button){
-        sign_in_button.parent().unwrap().hide();
-        let state = &mut STATE.lock().unwrap();
-        **state = Crypto::new(
-            &options.username, 
-            &options.password, 
-            options.private_device_id, 
-            OsRng.next_u64(), 
-            OsRng.next_u64());
-
-        let content:Box = sign_in_button
-            .parent().unwrap()
-            .parent().unwrap()
-            .downcast().expect("Found UI emlement but is not entry! UI is broke pls fix");
-        build_content(&content);
-    };
-}
-
-fn on_sign_in_attempt(sign_in_button:&Button) -> Option<SignInDetails>{
-    let username_input:Entry = sign_in_button
-        .parent().unwrap()
-        .first_child().unwrap()
-        .next_sibling().unwrap()
-        .downcast().expect("Found UI emlement but is not entry! UI is broke pls fix");
-    let password_input:Entry = username_input
-        .next_sibling().unwrap()
-        .next_sibling().unwrap()
-        .downcast().expect("Found UI emlement but is not entry! UI is broke pls fix");
-    let username = username_input.buffer().text().to_string();
-    let password = password_input.buffer().text().to_string();
-    
+pub fn on_sign_in_attempt(username:&str, password:&str) -> Option<SignInDetails>{ 
     if !Path::new(SAVE_DIR).is_dir() {
         fs::create_dir(SAVE_DIR).expect("can't make save directory");
     }
@@ -72,8 +39,8 @@ fn on_sign_in_attempt(sign_in_button:&Button) -> Option<SignInDetails>{
 
         return Some(SignInDetails {
             private_device_id: device_id, 
-            username, 
-            password 
+            username: username.to_string(), 
+            password: password.to_string() 
         });
     }else{
         log("User file found!");
@@ -96,8 +63,8 @@ fn on_sign_in_attempt(sign_in_button:&Button) -> Option<SignInDetails>{
 
                 return Some(SignInDetails { 
                     private_device_id: device_id, 
-                    username, 
-                    password 
+                    username: username.to_string(), 
+                    password: password.to_string() 
                 });
             };
         }

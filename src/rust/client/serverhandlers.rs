@@ -1,6 +1,6 @@
 extern crate chrono;
 
-use crate::client::store::Crypto;
+use crate::client::state::Crypto;
 use crate::client::utils::{decode_base64, Address, split_and_clean, log};
 use std::str;
 use std::convert::TryInto;
@@ -68,7 +68,7 @@ impl ServerMsg{
 		let content = match segments[1] {
 			INSECURE_LABEL => MsgContent::InsecureText(content_data),
 			SECURE_LABEL => {
-				log(&format!("Proccessing Secure Message:{}", content_data));
+				// log(&format!("Proccessing Secure Message:{}", content_data));
 				if let Some(secure_msg) = state.decrypt(&from, content_data){
 					MsgContent::SecureText(vec![secure_msg])
 				}else{
@@ -76,19 +76,19 @@ impl ServerMsg{
 				}
 			},
 			JOIN_LABEL => {
-				state.set_is_online(&from, true);
+				state.set_recieved_poll(&from);
 				MsgContent::Join(content_data)
 			},
 			PUBLIC_KEY_LABEL => {
 				if from != state.get_address(){
 					state.add_public_key(from.clone(), decode_to_public_key_bytes(content_data.clone()));
 				}
-				state.set_is_online(&from, true);
+				state.set_recieved_poll(&from);
 				MsgContent::PublicKey(content_data)
 			},
 			TRUST_LABEL => MsgContent::Trust(Address::from_sendable(content_data)),
 			LEAVE_LABEL => {
-				state.set_is_online(&from, false);
+				state.set_offline(&from);
 				MsgContent::Leave(content_data)
 			},
 			BLANK_LABEL => MsgContent::Blank(),
@@ -146,15 +146,7 @@ impl ServerMsg{
 	}
 	pub fn display(&self, state:&Crypto) -> Option<String>{
 		let msg_data = match &self.content {
-			MsgContent::PublicKey(pub_key) => {
-				if state.agent_from_pub_key(pub_key).is_some() {
-					None
-				}else if self.from != state.get_address(){
-					Some(("is alllowing people to trust them".to_string(), PUBLIC_KEY_LABEL))
-				}else{
-					None
-				}
-			},
+			MsgContent::PublicKey(_) => None,
 			MsgContent::SecureText(id) => {
 				if let Some(payload) = state.get_encrypted_msg(id.first().unwrap()){
 					Some((str::from_utf8(payload.as_slice()).expect("Invalid utf8 on decrypt").to_string(), SECURE_LABEL))
@@ -169,7 +161,7 @@ impl ServerMsg{
 				let res = Some((format!("{} is trusting {}", self.from.name, addr.name), TRUST_LABEL));
 				res
 			},
-			MsgContent::Blank() => Some(("Error Parsing Text".to_string(), BLANK_LABEL))
+			MsgContent::Blank() => Some(("Error Parsing Message".to_string(), BLANK_LABEL))
 		};
 		let native_time = NaiveDateTime::from_timestamp_millis(self.time_stamp).expect("Invalid Timestap for message!");
 		let date_time = native_time.format("%Y-%m-%d %H:%M:%S");
