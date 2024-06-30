@@ -6,8 +6,8 @@ authors = ["BoisterousCoder <boisterouscoder@gmail.com>"]
 edition = "2018"
 
 [[bin]]
-name = "yakking_yak"
-path = "src/rust/main.rs"
+name = "client"
+path = "src/main_client.rs"
 
 [dependencies]
 serde = {version = "~1.0",  features = ["derive"]}
