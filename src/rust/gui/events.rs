@@ -1,5 +1,4 @@
 use crate::client::state::Crypto;
-use crate::constants::{PROXY_SEED, SEED};
 use crate::{GROUP, SOCKET_CLIENT, STATE};
 
 use crate::client::save::GroupSave;
@@ -45,7 +44,7 @@ pub fn on_join_group(group_entry:&Entry){
         state.load_group_save(save);
         log("Successfully loaded group")
     }else{
-        state.new_group(SEED, PROXY_SEED);
+        state.new_group(OsRng.next_u64(), OsRng.next_u64());
         log("Changed to new group");
     }
 

@@ -22,7 +22,8 @@ pub struct Crypto{
 	proxy_ratchet:Ratchet,
 	agents: Vec<ForeinAgent>,
 	device_id:[u8; 32],
-	msgs: Vec<ServerMsg>
+	msgs: Vec<ServerMsg>,
+	is_empty: bool
 }
 impl Crypto{
 	pub fn new(name:&str, password:&str, device_id:[u8; 32], seed:u64, proxy_seed:u64) -> Crypto{
@@ -45,7 +46,8 @@ impl Crypto{
 				proxy_ratchet,
 				agents: vec!(),
 				is_encrypting: false,
-				msgs: vec!()
+				msgs: vec!(),
+				is_empty: false
 			};
 			state.add_public_key(proxy.address.clone(), proxy.public_key.as_bytes().clone());
 			state.trust(proxy.address.name.to_string());
@@ -55,6 +57,20 @@ impl Crypto{
 			panic!("Unreachable!!!");
 		};
 		
+	}
+	pub fn empty() -> Crypto {
+		let empty_address = Address::new("", vec![0u8]);
+		let empty_key_bundle = KeyBundle::new_self_key_set(empty_address, 0u64);
+		return Crypto {
+			self_data:empty_key_bundle,
+			device_id: [0u8; 32],
+			password: "".to_string(),
+			proxy_ratchet: Ratchet::empty(false),
+			agents: vec!(),
+			is_encrypting: false,
+			msgs: vec!(),
+			is_empty: true
+		};
 	}
 	pub fn add_public_key(&mut self, addr:Address, public_key_data:[u8; 32]) -> bool{
 		log(&format!("Adding Public key: {} -- {}", addr.name, public_key_data.len()));

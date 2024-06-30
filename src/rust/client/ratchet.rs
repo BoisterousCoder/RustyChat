@@ -26,6 +26,12 @@ impl Ratchet{
         ratchet.secret_chain.push(PayloadHandler::Unused(handler));
         return ratchet;
     }
+    pub fn empty(is_encrypting:bool) -> Self{
+        return Self {
+            is_encrypting,
+            secret_chain: vec![]
+        }
+    }
     pub fn process_payload(&mut self, addr:&Address, id:usize, payload:&[u8]) -> SecureMsgIdentifier{
         self.gen_handlers_to(id);
         match &self.secret_chain[id] {

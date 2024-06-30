@@ -1,8 +1,7 @@
-use constants::{APP_ID, DEVICE_ID, MSG_TYPES, PASSWORD, SOCKET_SERVER_ADDRESS};
+use constants::{APP_ID, MSG_TYPES, SOCKET_SERVER_ADDRESS};
 use ::gtk::{glib::ExitCode, prelude::*};
 use adw::{Application, gio::ApplicationFlags};
 
-use rand_core::{OsRng, RngCore};
 use std::sync::{Mutex, Arc};
 use rust_socketio::client::Client;
 use rust_socketio::{ClientBuilder, Payload};
@@ -24,9 +23,7 @@ lazy_static! {
         Mutex::new("".to_string())
     };
     static ref STATE:Mutex<Crypto> = {
-        let user_number:u32 = OsRng.next_u32();
-        let user_name = format!("Anon{:X}", user_number);
-        Mutex::new(Crypto::new(&user_name, PASSWORD, DEVICE_ID, OsRng.next_u64(), OsRng.next_u64()))
+        Mutex::new(Crypto::empty())
     };
     pub static ref MSG_QUEUE:SegQueue::<String> = SegQueue::new();
     pub static ref SOCKET_CLIENT:Arc<Client> = {
