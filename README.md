@@ -41,6 +41,8 @@ Clone this repository
 - Fix the randomness of the constants generated at the beggining
 - Generate a new shared key every so often for increased security
 - Start signing messages before sending for verification purposes
+- The box of messages should scroll to the bottom when a message is sent
+- The box of messages should pagify itself when there is a lot of messages
 
 ## Troubleshooting
 - You may need to create a bin folder in the public folder for the program to build into

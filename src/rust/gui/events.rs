@@ -1,5 +1,6 @@
 use crate::client::state::Crypto;
-use crate::{GROUP, PROXY_SEED, SEED, SOCKET_CLIENT, STATE};
+use crate::constants::{PROXY_SEED, SEED};
+use crate::{GROUP, SOCKET_CLIENT, STATE};
 
 use crate::client::save::GroupSave;
 use crate::client::utils::{log, Address};

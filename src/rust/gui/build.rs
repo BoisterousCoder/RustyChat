@@ -4,8 +4,8 @@ use adw::{ActionRow, ApplicationWindow, HeaderBar};
 use glib::{self, timeout_add_local};
 use std::time::Duration;
 
-use crate::{APP_TITLE, MSG_CHECK_INTERVAL};
 use crate::client::serverhandlers::ServerMsg;
+use crate::constants::{APP_TITLE, MSG_CHECK_INTERVAL};
 // use crate::client::utils::log;
 use crate::Crypto;
 

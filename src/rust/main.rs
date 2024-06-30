@@ -1,3 +1,4 @@
+use constants::{APP_ID, DEVICE_ID, MSG_TYPES, PASSWORD, SOCKET_SERVER_ADDRESS};
 use ::gtk::{glib::ExitCode, prelude::*};
 use adw::{Application, gio::ApplicationFlags};
 
@@ -12,24 +13,11 @@ extern crate lazy_static;
 
 mod client;
 mod gui;
+mod constants;
 
 use crate::gui::build::build_sign_in;
 use crate::client::state::Crypto;
 use crate::client::utils::log;
-
-static APP_ID: &str = "com.BoisterousCoder.YakkingYak";
-static APP_TITLE: &str = "Yakking Yak";
-
-const MSG_CHECK_INTERVAL:u64 = 1500;//In miliseconds. This is how long it 
-const SEED:u64 = 1234567890; //TODO: fix the seed to its actually random
-const PASSWORD:&str = "ABCDE";
-const PROXY_SEED:u64 = 0987654321; //TODO: fix the seed to its actually random
-const DEVICE_ID:[u8; 32] = [1u8; 32];//TODO: Make this useful
-const MSG_TYPES:[char; 6] = ['i', 's', 't', 'l', 'p', 'j'];
-const SOCKET_SERVER_ADDRESS:&'static str = "http://localhost:4000";
-const IS_AUTO_SAVING:bool = true;
-const POLL_INTERVAL:u64 = 30000;//In miliseconds
-const MAX_FAILED_CHECKS:u8 = 2;
 
 lazy_static! {
     static ref GROUP:Mutex<String> = {

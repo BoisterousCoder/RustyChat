@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use crate::client::key_bundle::KeyBundle;
 use crate::client::ratchet::Ratchet;
-use crate::MAX_FAILED_CHECKS;
+use crate::constants::MAX_FAILED_CHECKS;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ForeinAgent {

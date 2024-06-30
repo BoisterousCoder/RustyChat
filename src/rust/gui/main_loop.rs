@@ -1,7 +1,8 @@
 use ::gtk::{prelude::*, Button};
 use ::gtk::{Box, ListBox, Orientation, Popover};
 
-use crate::{GROUP, IS_AUTO_SAVING, MSG_CHECK_INTERVAL, MSG_QUEUE, POLL_INTERVAL, SOCKET_CLIENT, STATE};
+use crate::constants::{IS_AUTO_SAVING, MSG_CHECK_INTERVAL, POLL_INTERVAL};
+use crate::{GROUP, MSG_QUEUE, SOCKET_CLIENT, STATE};
 use crate::gui::build::display_msg;
 use crate::client::serverhandlers::{MsgContent, ServerMsg};
 use crate::client::state::Crypto;
