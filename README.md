@@ -14,18 +14,25 @@ This app depends on the Rust programming language, and Awaita for the GUI.
 It uses port 4000 to communicate with the Firebase server, so it will have to be opened.
 Note: The firebase server is just to setup the peer to peer connections and doesn't see any real data
 
-## Required Libraries for building outside of npm and cargo
+## Required Libraries for building outside of cargo
 - [Libadwaita](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html#libadwaita)
+- [OpenSSL](https://www.openssl.org/)
 
-On debian based distros like ubuntu do `$ sudo apt install libadwaita-1-dev`
+On debian based distros like ubuntu do 
+- `$ sudo apt install libadwaita-1-dev` for Libadwaita
+- `$ sudo apt install libssl-dev` for OpenSSL
 
 ### To build:
   
 Clone this repository
-1. Run `$ npm install` to install required nodejs libraries
-1. Run `$ npm run build` to build the rust web assembly library to build the pug files to html
-1. Run `$ npm run start` to start the node server   
-1. Run `$ cargo run` to start the adwaita client
+1. Setup a Firebase account if you dont already have one
+1. Setup a [Firebase project with a Web App](https://firebase.google.com/docs/web/setup?authuser=0&hl=en) and get the associated API key
+1. Setup a [Firebase real time database](https://firebase.google.com/docs/database/rtdb-vs-firestore) in the same project and get the database's url.
+    -It should look something like `https://yourapp.firebaseio.com/`
+1. Set the envoment variable `YAK_DB_KEY` to the API key you got earlier
+1. Set the envoment variable `YAK_DB_URL` to the datababe url you got earlier
+1. Run `$ cargo build`
+1. Run `$ cargo run`
 
 ### How to Use
 1. sign in by adding using your username and password or enter a new username and password to make a new account
