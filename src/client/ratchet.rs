@@ -7,7 +7,8 @@ use aes_gcm::{
     Aes256Gcm, Nonce
 };
 
-use super::{utils::{log, Address}, serverhandlers::SecureMsgIdentifier};
+use super::serverhandlers::SecureMsgIdentifier;
+use crate::client::utils::{log, Address};
 
 // use crate::lib::utils::{split_and_clean, log};
 

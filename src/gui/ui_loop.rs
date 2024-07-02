@@ -2,7 +2,7 @@ use ::gtk::{prelude::*, Button};
 use ::gtk::{Box, ListBox, Orientation, Popover};
 
 use crate::constants::{IS_AUTO_SAVING, MSG_CHECK_INTERVAL, POLL_INTERVAL};
-use crate::messaging::socket::{send_text, MSG_QUEUE};
+use crate::messaging::socket::{PEERS, MSG_QUEUE};
 use crate::{GROUP, STATE};
 use crate::gui::build::display_msg;
 use crate::client::serverhandlers::{MsgContent, ServerMsg};
@@ -10,7 +10,7 @@ use crate::client::state::Crypto;
 use crate::gui::events::on_user_click;
 use crate::client::utils::log;
 
-pub fn do_ui_loop(iterations_since_last_poll:&u64, msg_list:&ListBox, user_list:&Popover) -> bool{
+pub async fn do_ui_loop(iterations_since_last_poll:&u64, msg_list:&ListBox, user_list:&Popover) -> bool{
     let state = &mut STATE.lock().expect("unable to aquire state");
     while let Some(txt) = MSG_QUEUE.pop() {
         log("handing msg");
@@ -19,12 +19,12 @@ pub fn do_ui_loop(iterations_since_last_poll:&u64, msg_list:&ListBox, user_list:
             update_msg_display(msg_list, user_list, state);
 
             if let MsgContent::Join(_) = msg.content {
-                send_public_key(&state)
+                send_public_key(&state).await
             }
         }
     };
     if iterations_since_last_poll * MSG_CHECK_INTERVAL >= POLL_INTERVAL {
-        send_public_key(state);
+        send_public_key(state).await;
         state.update_online_statuses();
         update_msg_display(msg_list, user_list, state);
         return true;
@@ -32,10 +32,10 @@ pub fn do_ui_loop(iterations_since_last_poll:&u64, msg_list:&ListBox, user_list:
     return false;
 }
 
-fn send_public_key(state: &Crypto){
+async fn send_public_key(state: &Crypto){
     let content_to_send = MsgContent::PublicKey(state.public_key());
     let msg_to_send = ServerMsg::new(&state.get_address(), content_to_send);
-    send_text("p", &msg_to_send.to_string(&state));
+    PEERS.try_lock().unwrap().send_text(&msg_to_send.to_string(&state)).await;
 }
 
 pub fn update_msg_display(msg_list:&ListBox, user_list:&Popover, state:&Crypto){

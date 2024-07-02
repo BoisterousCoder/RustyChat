@@ -1,3 +1,4 @@
+use futures_executor::block_on;
 use ::gtk::{prelude::*, Button, CheckButton, Entry, Text, Box, 
         ListBox, Orientation, SelectionMode, ScrolledWindow, MenuButton, Popover};
 use adw::{ActionRow, ApplicationWindow, HeaderBar};
@@ -10,7 +11,7 @@ use crate::constants::{APP_TITLE, MSG_CHECK_INTERVAL};
 use crate::Crypto;
 
 use crate::gui::events::{on_join_group, on_send_msg, on_sign_in};
-use crate::gui::main_loop::do_ui_loop;
+use crate::gui::ui_loop::do_ui_loop;
 
 pub fn build_sign_in(app: &adw::Application) {
     let content = Box::new(Orientation::Vertical, 0);
@@ -202,14 +203,14 @@ pub fn build_content(content: &Box){
     
     content.append(&app_content);
     let mut iterations_since_last_poll:u64 = 0;
-    timeout_add_local( Duration::from_millis(MSG_CHECK_INTERVAL), move || {
-        let is_reseting_iter = do_ui_loop(&iterations_since_last_poll,&msg_list, &user_list);
+    timeout_add_local( Duration::from_millis(MSG_CHECK_INTERVAL),  move || {
+        let is_reseting_iter = block_on(do_ui_loop(&iterations_since_last_poll,&msg_list, &user_list));
         if is_reseting_iter {
             iterations_since_last_poll = 0;
         }else{
             iterations_since_last_poll += 1
         }
-        glib::source::Continue(true)
+        glib::ControlFlow::Continue
     });
 }
 

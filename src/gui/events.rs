@@ -1,10 +1,12 @@
 use crate::client::state::Crypto;
-use crate::messaging::socket::send_text;
+use crate::messaging::firebase::SEVER;
+use crate::messaging::socket::PEERS;
 use crate::{GROUP, STATE};
 
 use crate::client::save::GroupSave;
 use crate::client::utils::{log, Address};
 use crate::client::serverhandlers::{MsgContent, ServerMsg};
+use futures_executor::block_on;
 use ::gtk::{Button, Box, CheckButton, Entry, prelude::*};
 use rand_core::{OsRng, RngCore};
 
@@ -22,7 +24,7 @@ pub fn on_user_click(from:&Address){
         };
         if content.is_some() {
             let msg = ServerMsg::new(&state.get_address(), content.unwrap());
-            send_text("t",&msg.to_string(&state));
+            block_on(PEERS.try_lock().unwrap().send_text(&msg.to_string(&state)));
         }
     }else{
         log(&format!("Can't trust {} because you already trust them, you dont have their primary key, or it's you. Can't trust yourself after all.", from.name))
@@ -30,16 +32,29 @@ pub fn on_user_click(from:&Address){
 }
 
 pub fn on_join_group(group_entry:&Entry){
-    let state = &mut STATE.lock().unwrap();
+    let mut state = STATE.lock().unwrap();
+    let mut server = SEVER.lock().unwrap();
+    let mut peers = PEERS.lock().unwrap();
 
     let group = &mut GROUP.lock().unwrap();
     if !group.is_empty(){
         let old_save = state.group_as_save(&group);
         old_save.save(&state.password).expect("Unable to save the current group");
     }
-    
+
     let new_group = group_entry.buffer().text().to_string();
-    **group = new_group;
+    let public_key = state.public_key();
+    let sdp = peers.get_sdp();
+
+    block_on(peers.close_and_empty());
+    
+    block_on(server.register_to_group(&public_key, &sdp, &new_group));
+    let peers_data = block_on(server.get_peers_data_in_group());
+    for peer_data in peers_data {
+        block_on(peers.connect_to(&peer_data.sdp, &peer_data.public_key))
+    }
+
+    **group = new_group.to_string();
     
     if let Some(save) = GroupSave::load(state.get_address(), &group, &state.password){
         state.load_group_save(save);
@@ -51,7 +66,8 @@ pub fn on_join_group(group_entry:&Entry){
 
     let content = MsgContent::Join(group.to_string());
     let msg =  ServerMsg::new(&state.get_address(), content);
-    send_text("j",&msg.to_string(&state));
+    block_on(peers.send_text(&msg.to_string(&state)));
+
     state.update_online_statuses();
 }
 pub fn on_send_msg(msg_entry:&Entry){
@@ -64,7 +80,7 @@ pub fn on_send_msg(msg_entry:&Entry){
         .next_sibling().unwrap()
         .downcast().expect("Found UI emlement but is not checkbutton! UI is broke pls fix");
     
-    let (content, label) = if encyption_checkbox.is_active(){
+    let (content, _) = if encyption_checkbox.is_active(){
         let encrypted_text = state.encrypt(text);
         (MsgContent::SecureText(encrypted_text), "s")
     }else {
@@ -72,7 +88,7 @@ pub fn on_send_msg(msg_entry:&Entry){
     };
     let msg = ServerMsg::new(&state.get_address(), content);
 
-    send_text(&label,&msg.to_string(&state));
+    block_on(PEERS.try_lock().unwrap().send_text(&msg.to_string(&state)));
     msg_entry.buffer().set_text("");
 }
 

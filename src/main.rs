@@ -1,7 +1,6 @@
 use constants::APP_ID;
 use ::gtk::{glib::ExitCode, prelude::*};
 use adw::{Application, gio::ApplicationFlags};
-use messaging::socket::send_text;
 
 use std::sync::Mutex;
 
@@ -25,9 +24,10 @@ lazy_static! {
     };
 }
 
-fn main() -> ExitCode {
+#[tokio::main]
+async fn main() -> ExitCode {
     //The first emit doesn't seem to run right. This is a bypass for this.
-    send_text("TEST", "WARMUP");
+    //send_text("TEST", "WARMUP");
 
     let mut flags = ApplicationFlags::default();
     flags.set(ApplicationFlags::NON_UNIQUE, true);

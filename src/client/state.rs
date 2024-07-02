@@ -6,11 +6,12 @@ use x25519_dalek::PublicKey;
 use serde::{Serialize, Deserialize};
 
 use super::save::GroupSave;
-use super::utils::{Address, log, split_and_clean};
 use super::ratchet::Ratchet;
 use super::forein_agent::ForeinAgent;
 use super::key_bundle::{KeyBundle, SecretKey};
 use super::serverhandlers::{ServerMsg, SecureMsgIdentifier, MsgContent};
+
+use crate::client::utils::{Address, log, split_and_clean};
 
 const SALT_STRING:&str = "This is a temporary salt until I figure out what to put here";
 

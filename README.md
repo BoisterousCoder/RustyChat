@@ -1,5 +1,5 @@
 # Yakking Yak
-Yakking Yak is an end to end encrypted group chat app built with Rust and Node JS for the server. 
+Yakking Yak is an end to end encrypted group chat app built with Rust. 
 
 ## What is it:
 
@@ -9,9 +9,10 @@ By default, other users are untrusted, and each message is sent encrypted with a
 
 ## How do you use it:
 
-This app depends on the Rust programming language, and node js.
+This app depends on the Rust programming language, and Awaita for the GUI.
 
-It uses port 4000 to communicate with the server, so it will have to be opened locally.
+It uses port 4000 to communicate with the Firebase server, so it will have to be opened.
+Note: The firebase server is just to setup the peer to peer connections and doesn't see any real data
 
 ## Required Libraries for building outside of npm and cargo
 - [Libadwaita](https://gtk-rs.org/gtk4-rs/stable/latest/book/libadwaita.html#libadwaita)
@@ -43,6 +44,8 @@ Clone this repository
 - Start signing messages before sending for verification purposes
 - The box of messages should scroll to the bottom when a message is sent
 - The box of messages should pagify itself when there is a lot of messages
+- Currently you can only listen in on one group at a time. I want to make it so you can listen to multiple
+- Currently the group name is what you use to join the group. I want to make a group code seperate from the name
 
 ## Troubleshooting
 - You may need to create a bin folder in the public folder for the program to build into
